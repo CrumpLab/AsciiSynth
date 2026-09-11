@@ -1,4 +1,4 @@
-import { EAST_MODULES, WEST_MODULES, flattenRack } from './panels.js';
+import { EAST_MODULES, WEST_MODULES, LFO_MODULES, flattenRack } from './panels.js';
 import { SOURCE_IDS, DEST_IDS } from '../audio/matrix.js';
 import { PRESETS, listPresetNames } from '../state/patches.js';
 import { serializePatch, parsePatch, applyPatch } from '../state/patch.js';
@@ -21,14 +21,15 @@ export function keyToMidi(key, octave) {
 
 function clampWrap(v, n) { return ((v % n) + n) % n; }
 
-export function createInput({ state, engine, seq, setStatus, showOverlay, hideOverlay }) {
+export function createInput({ state, engine, seq, midi, setStatus, showOverlay, hideOverlay }) {
   const heldKeys = new Map(); // physical key -> midi note currently sounding
 
   const eastFlat = () => flattenRack(EAST_MODULES, engine);
   const westFlat = () => flattenRack(WEST_MODULES, engine);
+  const lfoFlat = () => flattenRack(LFO_MODULES, engine);
 
   function cyclePanel(dir) {
-    const order = ['EAST', 'MATRIX', 'WEST', 'SEQ'];
+    const order = ['EAST', 'MATRIX', 'LFO', 'WEST', 'SEQ'];
     const i = clampWrap(order.indexOf(state.focus.panel) + dir, order.length);
     state.focus.panel = order[i];
   }
@@ -37,6 +38,7 @@ export function createInput({ state, engine, seq, setStatus, showOverlay, hideOv
     const f = state.focus;
     if (f.panel === 'EAST') f.eastIndex = clampWrap(f.eastIndex + dir, eastFlat().length);
     else if (f.panel === 'WEST') f.westIndex = clampWrap(f.westIndex + dir, westFlat().length);
+    else if (f.panel === 'LFO') f.lfoIndex = clampWrap(f.lfoIndex + dir, lfoFlat().length);
     else if (f.panel === 'MATRIX') f.row = clampWrap(f.row + dir, SOURCE_IDS.length);
     else if (f.panel === 'SEQ') nudgeSeqNote(-dir * (coarse ? 12 : 1)); // up-arrow (dir -1) should raise pitch
   }
@@ -54,6 +56,9 @@ export function createInput({ state, engine, seq, setStatus, showOverlay, hideOv
       if (entry) { engine.modules[entry.modId].params[entry.key].nudge(dir, coarse); state.dirty = true; }
     } else if (f.panel === 'WEST') {
       const entry = westFlat()[f.westIndex];
+      if (entry) { engine.modules[entry.modId].params[entry.key].nudge(dir, coarse); state.dirty = true; }
+    } else if (f.panel === 'LFO') {
+      const entry = lfoFlat()[f.lfoIndex];
       if (entry) { engine.modules[entry.modId].params[entry.key].nudge(dir, coarse); state.dirty = true; }
     } else if (f.panel === 'MATRIX') {
       f.col = clampWrap(f.col + dir, DEST_IDS.length);
@@ -185,8 +190,23 @@ export function createInput({ state, engine, seq, setStatus, showOverlay, hideOv
         engine.matrix.clear(); state.dirty = true; setStatus('matrix cleared');
         break;
       case 'panic':
-        engine.panic(); setStatus('panic — all notes off');
+        engine.panic(); midi.releaseAll(); setStatus('panic — all notes off');
         break;
+      case 'midi': {
+        const a = arg.trim().toLowerCase();
+        midi.connect().then(() => {
+          if (a === 'all') { midi.selectAll(); setStatus(`midi: ${midi.status()}`); return; }
+          if (a) {
+            const n = parseInt(a, 10);
+            if (!Number.isFinite(n) || !midi.select(n)) {
+              setStatus(`midi: no such input — :midi to list, :midi <n> to pick one, :midi all for every input`);
+              return;
+            }
+          }
+          setStatus(`midi: ${midi.status()}`);
+        });
+        break;
+      }
       case 'plain':
         state.plainMode = !state.plainMode;
         setStatus(state.plainMode ? 'plain mode on' : 'plain mode off');

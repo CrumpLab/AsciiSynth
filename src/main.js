@@ -7,10 +7,11 @@ import { parsePatch, applyPatch } from './state/patch.js';
 import * as L from './ui/layout.js';
 import {
   drawFrame, drawTitleBar, drawRack, drawMatrix, drawSeq, drawMeters, drawCmdLine, drawBoot,
-  EAST_MODULES, WEST_MODULES,
+  EAST_MODULES, WEST_MODULES, LFO_MODULES,
 } from './ui/panels.js';
 import { createInput } from './ui/input.js';
-import { BOOT_LINES, HELP_LINES, NOTES_LINES } from './ui/flavor.js';
+import { createMidiInput } from './midi/midi.js';
+import { BOOT_LINES, HELP_LINES } from './ui/flavor.js';
 
 const screenEl = document.getElementById('screen');
 const screen = new Screen(L.COLS, L.ROWS, screenEl);
@@ -31,9 +32,10 @@ const state = {
   status: '', statusTimer: null,
   overlay: null,
   cmdMode: false, cmdBuffer: '',
-  focus: { panel: 'EAST', eastIndex: 0, westIndex: 0, row: 0, col: 0 },
+  focus: { panel: 'EAST', eastIndex: 0, westIndex: 0, lfoIndex: 0, row: 0, col: 0 },
   octave: 0,
   gestureDone: false,
+  bootError: null,
   bootDone: false,
   bootRevealed: 0,
   plainMode: false,
@@ -101,7 +103,8 @@ function showOverlay(kind, content = '') {
 function hideOverlay() { state.overlay = null; overlayEl.hidden = true; }
 
 // -------------------------------------------------------------- input -----
-const input = createInput({ state, engine, seq, setStatus, showOverlay, hideOverlay });
+const midi = createMidiInput({ engine, setStatus });
+const input = createInput({ state, engine, seq, midi, setStatus, showOverlay, hideOverlay });
 
 function ensureGesture() {
   if (state.gestureDone) return;
@@ -111,7 +114,11 @@ function ensureGesture() {
     applyPatch(engine, parsed);
     state.patchName = parsed.name;
     state.dirty = false;
-  }).catch((err) => { console.error(err); setStatus('boot failed — see console'); });
+  }).catch((err) => {
+    console.error(err);
+    state.bootError = (err && err.message) || String(err);
+  });
+  midi.connect();
 }
 
 window.addEventListener('keydown', (e) => {
@@ -158,10 +165,10 @@ function render() {
   screen.clear();
 
   if (!engine.ready) {
-    const msg = state.gestureDone ? 'booting…' : 'A S C I I S Y N T H';
-    const sub = state.gestureDone ? '' : 'press any key, or click, to begin';
-    screen.text(38, 18, msg, 'bright');
-    if (sub) screen.text(30, 20, sub, 'dim');
+    const msg = state.bootError ? 'boot failed' : state.gestureDone ? 'booting…' : 'A S C I I S Y N T H';
+    const sub = state.bootError || (state.gestureDone ? '' : 'press any key, or click, to begin');
+    screen.text(38, 18, msg, state.bootError ? 'warn' : 'bright');
+    if (sub) screen.text(Math.max(0, 50 - Math.floor(sub.length / 2)), 20, sub, state.bootError ? 'warn' : 'dim');
     return;
   }
   if (!state.bootDone) {
@@ -172,7 +179,8 @@ function render() {
   drawFrame(screen);
   drawTitleBar(screen, state);
   drawRack(screen, L.LEFT_X, L.BODY_Y, L.LEFT_W, L.BODY_H, EAST_MODULES, engine, { label: '[ EAST ]' }, state.focus.eastIndex, state.focus.panel === 'EAST');
-  drawMatrix(screen, L.MID_X, L.BODY_Y, L.MID_W, L.BODY_H, engine, state.focus, NOTES_LINES, Date.now() - state.epoch);
+  const lfoY = drawMatrix(screen, L.MID_X, L.BODY_Y, L.MID_W, engine, state.focus);
+  drawRack(screen, L.MID_X, lfoY, L.MID_W, (L.BODY_Y + L.BODY_H) - lfoY, LFO_MODULES, engine, { label: '[ LFO ]' }, state.focus.lfoIndex, state.focus.panel === 'LFO');
   drawRack(screen, L.RIGHT_X, L.BODY_Y, L.RIGHT_W, L.BODY_H, WEST_MODULES, engine, { label: '[ WEST ]' }, state.focus.westIndex, state.focus.panel === 'WEST');
   drawSeq(screen, L.LEFT_X, L.ROW_SEQ, L.COLS - 2, seq, state.focus.panel === 'SEQ');
   drawMeters(screen, L.LEFT_X, L.ROW_METER, L.COLS - 2, engine);

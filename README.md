@@ -26,7 +26,7 @@ that keypress is also the required gesture to unlock audio.
 ## Playing it
 
 ```
-tab / shift-tab     cycle focus: east rack ▸ matrix ▸ west rack ▸ sequencer
+tab / shift-tab     cycle focus: east rack ▸ matrix ▸ LFOs ▸ west rack ▸ sequencer
 arrows               move within the focused panel
 ←/→ on a param       adjust it (hold shift for a coarse step)
 space                toggle a matrix pin · toggle a sequencer step's gate
@@ -43,9 +43,23 @@ on the sequencer (tab to it):
 
 :                     command line — :save, :load, :patch <name>, :rand [n],
                       :gen [seed], :bpm <n>, :scale [name] [key], :key <note>,
-                      :randseq [seed], :clear, :panic, :help
+                      :randseq [seed], :clear, :midi, :panic, :help
 ?                     help overlay (it's missing a page — that's on purpose)
 ```
+
+LFO-1 and LFO-2 have their own small rack tucked under the routing matrix
+(tab past matrix to reach it) — SHAPE and RATE, same arrow-key controls as
+everywhere else. They're always patchable as matrix sources even before you
+touch that rack; this is just where you set what they're actually doing.
+
+Any connected MIDI controller works too — no setup, it's auto-detected on
+first keypress/click and plays the same mono voice as the QWERTY keys.
+Sustain pedal (CC64) works. `:midi` (re)requests access and lists what's
+plugged in; if the browser's permission prompt was missed, or a device was
+plugged in after the page loaded, running `:midi` again retries it. With
+more than one input connected, `:midi <n>` narrows listening to just that
+one (handy if two devices are echoing each other), `:midi all` reverts to
+merging every input.
 
 Three built-in patches beyond the boot default: `:patch drone`,
 `:patch uncertainty`, `:patch putney`.
@@ -94,6 +108,7 @@ src/audio/
   worklets/                  ladder-processor.js, entropy-processor.js
 src/state/                   patch (de)serialization, built-in + random presets
 src/ui/                       panel rendering, input/keymap, flavor text
+src/midi/                     Web MIDI input, merged into the same voice
 src/util/rng.js               seedable PRNG shared by :gen and :randseq
 ```
 
@@ -106,5 +121,4 @@ src/util/rng.js               seedable PRNG shared by :gen and :randseq
   full ~18×17 sketched in the plan's mockup — a deliberately smaller but
   fully real set; extending it is just adding entries to `matrix.js` and
   `engine.js`'s `destMap`/`srcMap`.
-- No MIDI input, no audio export yet (both noted as open questions in the
-  plan).
+- No audio export yet (noted as an open question in the plan).

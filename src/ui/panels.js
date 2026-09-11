@@ -8,10 +8,12 @@ const MODULE_LABELS = {
   ADSR1: 'ADSR-1', ADSR2: 'ADSR-2', VCA: 'VCA',
   CPLX: 'CPLX', FOLD: 'FOLD', LPG: 'LPG', FNGEN: 'FNGEN',
   ENTROPY: 'ENTROPY', RING: 'RING', DELAY: 'DELAY',
+  LFO1: 'LFO-1', LFO2: 'LFO-2',
 };
 
 export const EAST_MODULES = ['VCO1', 'VCO2', 'NOISE', 'LADDER', 'ADSR1', 'ADSR2', 'VCA'];
 export const WEST_MODULES = ['CPLX', 'FOLD', 'LPG', 'FNGEN', 'ENTROPY', 'RING', 'DELAY'];
+export const LFO_MODULES = ['LFO1', 'LFO2'];
 const ADSR_SET = new Set(['ADSR1', 'ADSR2']);
 
 export const SRC_LABELS = { VCO1: 'VCO1', VCO2: 'VCO2', NOISE: 'NOISE', CPLX: 'CPLX', FOLD: 'FOLD', LFO1: 'LFO-1', LFO2: 'LFO-2', ADSR1: 'ADSR1', ADSR2: 'ADSR2', FNGEN: 'FNGEN', ENTROPY: 'ENTRPY', GATE: 'GATE', KBDCV: 'KBDCV' };
@@ -139,7 +141,9 @@ function drawAdsrQuad(screen, x, y, w, mod, selectedSub, active) {
 }
 
 // ------------------------------------------------------------ matrix -----
-export function drawMatrix(screen, x, y, w, h, engine, focus, notesLines, epoch) {
+// Returns the row just below the matrix — callers use it to stack the LFO
+// rack right underneath without hardcoding the matrix's own row count.
+export function drawMatrix(screen, x, y, w, engine, focus) {
   const count = engine.matrix.count();
   screen.text(x, y, padRight(`ROUTING MATRIX`, w - 10), 'bright');
   screen.text(x + w - 10, y, padLeft(`[${String(count).padStart(2, '0')}/${DEST_IDS.length}]`, 10), 'dim');
@@ -171,15 +175,7 @@ export function drawMatrix(screen, x, y, w, h, engine, focus, notesLines, epoch)
     screen.text(x, cy, padRight('› move here to patch (tab)', w), 'dim');
   }
   cy += 2;
-  if (cy < y + h) {
-    screen.text(x, cy, '◇ LOG ◇', 'dim'); cy++;
-    for (const line of notesLines) {
-      if (cy >= y + h) break;
-      const text = typeof line === 'function' ? line(epoch) : line;
-      screen.text(x, cy, padRight(text, w), 'dim');
-      cy++;
-    }
-  }
+  return cy;
 }
 
 // --------------------------------------------------------------- seq -----

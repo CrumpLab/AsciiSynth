@@ -87,7 +87,7 @@ export function createVCO(ctx, id, { baseFreq = 220 } = {}) {
     wave: param('wave', 'WAVE', { value: 0, min: 0, max: 2, step: 1, enumOptions: ['SAW', 'PLS', 'TRI'], fmt: (v) => waves[Math.round(v)].toUpperCase(),
       onSet: (v) => { wave = waves[Math.round(v)]; route(); } }),
     pw: param('pw', 'PW', { value: 0.5, min: 0.05, max: 0.95, fmt: (v) => Math.round(v * 100) + '%', onSet: (v) => { pwShaper.curve = pwCurve(v); } }),
-    tune: param('tune', 'TUNE', { value: 0, min: -100, max: 100, unit: 'ct', fmt: (v) => (v >= 0 ? '+' : '') + v.toFixed(0) + '¢',
+    tune: param('tune', 'TUNE', { value: 0, min: -100, max: 100, step: 1, unit: 'ct', fmt: (v) => (v >= 0 ? '+' : '') + v.toFixed(0) + '¢',
       onSet: (v) => { osc.detune.setTargetAtTime(v, ctx.currentTime, 0.02); } }),
   };
 
@@ -141,7 +141,7 @@ export function createLadder(ctx, id) {
   inputSum.connect(node);
 
   const params = {
-    cutoff: param('cutoff', 'CUTOFF', { value: 1200, min: 20, max: 12000, fmt: (v) => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v) + 'Hz',
+    cutoff: param('cutoff', 'CUTOFF', { value: 1200, min: 20, max: 12000, step: 100, fmt: (v) => v >= 1000 ? (v / 1000).toFixed(1) + 'k' : Math.round(v) + 'Hz',
       onSet: (v) => { node.parameters.get('cutoff').setTargetAtTime(v, ctx.currentTime, 0.01); } }),
     resonance: param('resonance', 'RESO', { value: 0.2, min: 0, max: 1.05, fmt: (v) => v.toFixed(2),
       onSet: (v) => { node.parameters.get('resonance').setValueAtTime(v, ctx.currentTime); } }),

@@ -27,6 +27,10 @@ export class Engine {
     const ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
     this.ctx = ctx;
 
+    if (!ctx.audioWorklet) {
+      throw new Error('AudioWorklet unavailable — serve this over http://localhost or https://, not a bare IP or file://');
+    }
+
     const base = new URL('./worklets/', import.meta.url);
     await ctx.audioWorklet.addModule(new URL('ladder-processor.js', base));
     await ctx.audioWorklet.addModule(new URL('entropy-processor.js', base));

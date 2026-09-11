@@ -390,7 +390,9 @@ hidden modules, reduced-motion and `:plain` paths.
 
 1. Mono forever, or paraphonic later? (Recommendation: mono through M8; it's more honest and
    removes a large class of work.)
-2. MIDI in via Web MIDI — worth it at M5, or a distraction?
+2. ~~MIDI in via Web MIDI — worth it at M5, or a distraction?~~ Shipped
+   post-M8: any connected controller feeds the same mono note-priority
+   stack as the QWERTY keys, via `src/midi/`.
 3. Recording: `MediaRecorder` on the master bus for a WAV/WebM export is ~30 lines and makes
    the thing shareable. Probably M6.
 4. Does the fragmentary manual imply a *character* — someone who built this machine — or is

@@ -18,7 +18,7 @@ export const BOOT_LINES = [
 
 export const HELP_LINES = [
   '§1  NAVIGATION',
-  '    tab / shift-tab   cycle panel focus (east ▸ matrix ▸ west ▸ seq)',
+  '    tab / shift-tab   cycle panel focus (east ▸ matrix ▸ lfo ▸ west ▸ seq)',
   '    arrows            move within the focused panel',
   '    space             toggle matrix pin  ·  toggle seq step gate',
   '    + / -             nudge matrix pin depth · seq step pitch',
@@ -28,6 +28,8 @@ export const HELP_LINES = [
   '    z x c v b n m , .   natural row, one octave from C',
   '    s d   g h j   l     sharps, positioned above the gaps',
   '    9 / 0               octave down / up',
+  '    MIDI controller     auto-detected — plays the same voice; sustain',
+  '                        pedal (CC64) works — :midi shows what\'s connected',
   '',
   '§3  SEQUENCER  (tab to it, then:)',
   '    ← / →               select a step',
@@ -57,6 +59,10 @@ export const HELP_LINES = [
   '    :gen [seed]        generate a whole random patch — same seed,',
   '                       same patch, every time',
   '    :clear             clear the matrix',
+  '    :midi              (re)connect and list MIDI inputs — merged into',
+  '                       one voice by default',
+  '    :midi <n>          listen to only input n from that list',
+  '    :midi all          go back to merging every input',
   '    :panic             all notes off',
   '',
   '§6  MATRIX DESTINATION CODES',
@@ -66,13 +72,4 @@ export const HELP_LINES = [
   '    PN PAN         ER ENTROPY.RATE            ML MASTER.LVL',
   '',
   '           esc to close · this page is not complete',
-];
-
-export const NOTES_LINES = [
-  'west chain: normalled, unpatched',
-  'filter self-osc threshold: .85',
-  (epoch) => `signal integrity: ${(61 + Math.sin(epoch / 4000) * 6).toFixed(0)}%`,
-  'patch memory: 3 slots free',
-  'carrier drift — untraceable',
-  'last visitor: —',
 ];
