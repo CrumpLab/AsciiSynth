@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ASCIISYNTH</title>
+<link rel="icon" href="data:," />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body data-theme="amber">
+  <div id="stage">
+    <div id="crtwrap">
+      <div id="screen" aria-label="ASCIISYNTH display" role="img"></div>
+      <div id="scanlines" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <div id="live" aria-live="polite" class="sr-only"></div>
+
+  <div id="overlay" hidden>
+    <div id="overlay-box" role="dialog" aria-modal="true">
+      <div id="overlay-title"></div>
+      <pre id="overlay-pre" hidden></pre>
+      <textarea id="overlay-textarea" hidden spellcheck="false" wrap="off"></textarea>
+      <div id="overlay-actions"></div>
+      <div id="overlay-hint">esc to close</div>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

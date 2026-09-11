@@ -1,0 +1,10 @@
+{
+  "name": "asciisynth",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A browser synthesizer styled as an early-terminal ASCII instrument.",
+  "scripts": {
+    "dev": "python3 -m http.server 8080"
+  }
+}
