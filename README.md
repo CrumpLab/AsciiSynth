@@ -1,5 +1,7 @@
 # ASCIISYNTH
 
+Vibe coded with Claude, uncertain bugs
+
 A browser synthesizer whose entire interface is a grid of characters — a
 Moog-ish east chain and a Buchla-ish west chain sharing one EMS-Putney-style
 patch matrix, dressed as a terminal instrument from a machine that predates
